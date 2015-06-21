@@ -14,7 +14,7 @@ This assignment is based on the data being collected by Activity Monitors mounte
 ##Executive Summary
 Based on training data set made available at https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv an attempt has been made to determine the  predictor variables  required for determination of the activity quality as defined in the Weight Lifting Data set. Data set has been divided in the ratio of 60:40 for cross validation. It is found that the quality is very accurately predicted by the accelerometer signals.
 
-**Loading and Exploring the Data
+###Loading and Exploring the Data
 Data was downloaded into the project repository and read using the read.csv
 
 ```{r Loading and Exploring}
@@ -25,8 +25,7 @@ library(caret)
 dim(training)
 ```
 
-**Subsetting the Training and Test Data
-
+### Subsetting the Training and Test Data
 Data was investigated using Summary command and it was found that the data relating to acceleration, roll,ptich and yaw of the sensors on waist, dumbbell, fore arm and arm only is important for prediction of the classe i.e activity quality. These data have a well defined prefix with the sensor name appended in the end. Both Training and Test Data Sets were subset including these and last parameter namely activity Quality or classe
 
 ```{r,Sunsetting,results='hide'}
@@ -38,7 +37,7 @@ training1<-training[,c(var1,160)]
 testingProject<-testing[,c(var1,160)]
 ```
 
-**Partitioning and Model Fitting on the Training Data Set
+###Partitioning and Model Fitting on the Training Data Set
 The Training data set  was partitioned in 60:40 ratio as training and testing data sets. Model Fitting has been done using randomForest Library and not train method of caret library as the later has been found to be extremely slow and has been reported so on the forums. 
 ```{r,Model Fitting}
 library(randomForest)
@@ -50,18 +49,52 @@ modFit <- randomForest(classe ~., training2)
 print(modFit)
 ```
 
-***Validation on the test Set
-The model fitted above has a out of Bag error on only .7% on the training data set and is a reasonable model. Now let us see the model performance on the testdata set partition of the training data set.
+### Validation on the test Set
+The model fitted above has a out of Bag error in the range of  .7% on the training data set and is a reasonable model. Now let us see the model performance on the testdata set partition of the training data set.
 
 ```{r Validation Set}
 result<-predict(modFit,testing2)
 confusionMatrix(result, testing2$classe)
 ```
-Method has a accuracy of 99.38% which is simlar to the training data set thus indicating its applicability to this data set. The method now shall be applied to the testing data set for the assignment and results uploaded.
+Method has a accuracy in excess of 98%  which is simlar to the training data set thus indicating its applicability to this data set. The method now shall be applied to the testing data set for the assignment and results uploaded.
+
 ```{r,Project Test}
 result<-predict(modFit,testingProject)
 result
 ```
-These results have been uploaded onto the assignment section na have been found to be matching,
+These results have been uploaded onto the assignment section and have been found to be matching,
+
+###Limited Predictors
+
+The importance of various variables was noted down and variables with importance higher than 250 have bene investigated as predictors. There are only 9 of them. On fitting a model it seems that dropping 44 predcitors does not casue a major loss of predictabilty. This is also true in case of test data sets.
+
+```{r Limited Parameter Model}
+wts<-varImp(modFit)
+wts$names<-rownames(wts)
+wt2<-wts[wts$Overall>250,]
+wt2
+set.seed(33587)
+modFit2 <- randomForest(classe ~ accel_dumbbell_y +magnet_dumbbell_x+ magnet_dumbbell_y + magnet_dumbbell_z + roll_belt +roll_forearm +pitch_belt + pitch_forearm + yaw_belt             , training2)
+print(modFit2)
+```
+Out of Bag  oob Rate has marginally increased from about .7 to 1.5 in this case which is acceptable.
+
+### Validation for Limited Parameter Model with Test Data Subset
+The accuracy still stays in the range of 98% which is acceptable
 
 
+```{r Limied Validation}
+result<-predict(modFit2,testing2)
+confusionMatrix(result, testing2$classe)
+````
+
+###Checking the test submission
+Test Submissions are compared for both 52 as well as 9 predcitor models and are found to be equal.
+
+```{r,Project Test2}
+result2<-predict(modFit2,testingProject)
+result1<-predict(modFit,testingProject)
+table(result2,result1)
+
+```
+Thus limited parameter model is selected with predictors comprising of the accelrations and magneti movements of dumbeel roll and pitch of the belt and forearm as well as yaw of the belt.

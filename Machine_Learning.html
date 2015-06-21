@@ -74,7 +74,9 @@ img {
 <div id="executive-summary" class="section level2">
 <h2>Executive Summary</h2>
 <p>Based on training data set made available at <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv" class="uri">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a> an attempt has been made to determine the predictor variables required for determination of the activity quality as defined in the Weight Lifting Data set. Data set has been divided in the ratio of 60:40 for cross validation. It is found that the quality is very accurately predicted by the accelerometer signals.</p>
-<p>**Loading and Exploring the Data Data was downloaded into the project repository and read using the read.csv</p>
+<div id="loading-and-exploring-the-data" class="section level3">
+<h3>Loading and Exploring the Data</h3>
+<p>Data was downloaded into the project repository and read using the read.csv</p>
 <pre class="r"><code>setwd(&quot;C:/Users/hp/Desktop/Keshav/Coursera/Data Scienc Track/Practical Machine Learning/Project&quot;)
 training&lt;-read.csv(&quot;./pml-training.csv&quot;,header =TRUE,sep =&quot;,&quot;)
 testing&lt;-read.csv(&quot;./pml-testing.csv&quot;,header =TRUE,sep =&quot;,&quot;)
@@ -83,7 +85,9 @@ library(caret)</code></pre>
 ## Loading required package: ggplot2</code></pre>
 <pre class="r"><code>dim(training)</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
-<p>**Subsetting the Training and Test Data</p>
+</div>
+<div id="subsetting-the-training-and-test-data" class="section level3">
+<h3>Subsetting the Training and Test Data</h3>
 <p>Data was investigated using Summary command and it was found that the data relating to acceleration, roll,ptich and yaw of the sensors on waist, dumbbell, fore arm and arm only is important for prediction of the classe i.e activity quality. These data have a well defined prefix with the sensor name appended in the end. Both Training and Test Data Sets were subset including these and last parameter namely activity Quality or classe</p>
 <pre class="r"><code>var1 &lt;- c(grep(&quot;^accel&quot;, names(training)), grep(&quot;^gyros&quot;, names(training)), 
                   grep(&quot;^magnet&quot;, names(training)), grep(&quot;^roll&quot;, names(training)), 
@@ -91,7 +95,10 @@ library(caret)</code></pre>
                   grep(&quot;^total&quot;, names(training)))                                                                             
 training1&lt;-training[,c(var1,160)]
 testingProject&lt;-testing[,c(var1,160)]</code></pre>
-<p>**Partitioning and Model Fitting on the Training Data Set The Training data set was partitioned in 60:40 ratio as training and testing data sets. Model Fitting has been done using randomForest Library and not train method of caret library as the later has been found to be extremely slow and has been reported so on the forums.</p>
+</div>
+<div id="partitioning-and-model-fitting-on-the-training-data-set" class="section level3">
+<h3>Partitioning and Model Fitting on the Training Data Set</h3>
+<p>The Training data set was partitioned in 60:40 ratio as training and testing data sets. Model Fitting has been done using randomForest Library and not train method of caret library as the later has been found to be extremely slow and has been reported so on the forums.</p>
 <pre class="r"><code>library(randomForest)</code></pre>
 <pre><code>## Warning: package 'randomForest' was built under R version 3.2.1</code></pre>
 <pre><code>## randomForest 4.6-10
@@ -111,53 +118,146 @@ print(modFit)</code></pre>
 ## 
 ##         OOB estimate of  error rate: 0.7%
 ## Confusion matrix:
-##      A    B    C    D    E class.error
-## A 3340    6    0    1    1 0.002389486
-## B   16 2258    5    0    0 0.009214568
-## C    0   11 2039    4    0 0.007302824
-## D    0    0   28 1899    3 0.016062176
-## E    0    0    1    6 2158 0.003233256</code></pre>
-<p>***Validation on the test Set The model fitted above has a out of Bag error on only .7% on the training data set and is a reasonable model. Now let us see the model performance on the testdata set partition of the training data set.</p>
+##      A    B    C    D    E  class.error
+## A 3345    3    0    0    0 0.0008960573
+## B   10 2261    8    0    0 0.0078982010
+## C    0   23 2026    5    0 0.0136319377
+## D    0    0   20 1908    2 0.0113989637
+## E    0    0    3    8 2154 0.0050808314</code></pre>
+</div>
+<div id="validation-on-the-test-set" class="section level3">
+<h3>Validation on the test Set</h3>
+<p>The model fitted above has a out of Bag error in the range of .7% on the training data set and is a reasonable model. Now let us see the model performance on the testdata set partition of the training data set.</p>
 <pre class="r"><code>result&lt;-predict(modFit,testing2)
 confusionMatrix(result, testing2$classe)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 2231    7    0    0    0
-##          B    1 1505    9    0    0
-##          C    0    6 1358   11    0
-##          D    0    0    1 1275    4
-##          E    0    0    0    0 1438
+##          A 2230   14    0    0    0
+##          B    1 1502   13    0    0
+##          C    1    2 1354   15    2
+##          D    0    0    1 1271    6
+##          E    0    0    0    0 1434
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.995           
-##                  95% CI : (0.9932, 0.9965)
+##                Accuracy : 0.993           
+##                  95% CI : (0.9909, 0.9947)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9937          
+##                   Kappa : 0.9911          
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9996   0.9914   0.9927   0.9914   0.9972
-## Specificity            0.9988   0.9984   0.9974   0.9992   1.0000
-## Pos Pred Value         0.9969   0.9934   0.9876   0.9961   1.0000
-## Neg Pred Value         0.9998   0.9979   0.9985   0.9983   0.9994
+## Sensitivity            0.9991   0.9895   0.9898   0.9883   0.9945
+## Specificity            0.9975   0.9978   0.9969   0.9989   1.0000
+## Pos Pred Value         0.9938   0.9908   0.9854   0.9945   1.0000
+## Neg Pred Value         0.9996   0.9975   0.9978   0.9977   0.9988
 ## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2843   0.1918   0.1731   0.1625   0.1833
-## Detection Prevalence   0.2852   0.1931   0.1752   0.1631   0.1833
-## Balanced Accuracy      0.9992   0.9949   0.9950   0.9953   0.9986</code></pre>
-<p>Method has a accuracy of 99.38% which is simlar to the training data set thus indicating its applicability to this data set. The method now shall be applied to the testing data set for the assignment and results uploaded.</p>
+## Detection Rate         0.2842   0.1914   0.1726   0.1620   0.1828
+## Detection Prevalence   0.2860   0.1932   0.1751   0.1629   0.1828
+## Balanced Accuracy      0.9983   0.9936   0.9933   0.9936   0.9972</code></pre>
+<p>Method has a accuracy in excess of 98% which is simlar to the training data set thus indicating its applicability to this data set. The method now shall be applied to the testing data set for the assignment and results uploaded.</p>
 <pre class="r"><code>result&lt;-predict(modFit,testingProject)
 result</code></pre>
 <pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
 ##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
 ## Levels: A B C D E</code></pre>
-<p>These results have been uploaded onto the assignment section na have been found to be matching,</p>
+<p>These results have been uploaded onto the assignment section and have been found to be matching,</p>
+</div>
+<div id="limited-predictors" class="section level3">
+<h3>Limited Predictors</h3>
+<p>The importance of various variables was noted down and variables with importance higher than 250 have bene investigated as predictors. There are only 9 of them. On fitting a model it seems that dropping 44 predcitors does not casue a major loss of predictabilty. This is also true in case of test data sets.</p>
+<pre class="r"><code>wts&lt;-varImp(modFit)
+wts$names&lt;-rownames(wts)
+wt2&lt;-wts[wts$Overall&gt;250,]
+wt2</code></pre>
+<pre><code>##                    Overall             names
+## magnet_dumbbell_x 290.8840 magnet_dumbbell_x
+## magnet_dumbbell_y 402.9383 magnet_dumbbell_y
+## magnet_dumbbell_z 437.4053 magnet_dumbbell_z
+## roll_belt         774.9757         roll_belt
+## roll_dumbbell     250.7230     roll_dumbbell
+## roll_forearm      350.2116      roll_forearm
+## pitch_belt        404.8228        pitch_belt
+## pitch_forearm     464.2875     pitch_forearm
+## yaw_belt          530.9003          yaw_belt</code></pre>
+<pre class="r"><code>set.seed(33587)
+modFit2 &lt;- randomForest(classe ~ accel_dumbbell_y +magnet_dumbbell_x+ magnet_dumbbell_y + magnet_dumbbell_z + roll_belt +roll_forearm +pitch_belt + pitch_forearm + yaw_belt             , training2)
+print(modFit2)</code></pre>
+<pre><code>## 
+## Call:
+##  randomForest(formula = classe ~ accel_dumbbell_y + magnet_dumbbell_x +      magnet_dumbbell_y + magnet_dumbbell_z + roll_belt + roll_forearm +      pitch_belt + pitch_forearm + yaw_belt, data = training2) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 3
+## 
+##         OOB estimate of  error rate: 1.67%
+## Confusion matrix:
+##      A    B    C    D    E class.error
+## A 3319   17    9    3    0 0.008661888
+## B   24 2202   40   13    0 0.033786749
+## C    3   26 2009   16    0 0.021908471
+## D    0    3   18 1907    2 0.011917098
+## E    0   11    7    5 2142 0.010623557</code></pre>
+<p>Out of Bag oob Rate has marginally increased from about .7 to 1.5 in this case which is acceptable.</p>
+</div>
+<div id="validation-for-limited-parameter-model-with-test-data-subset" class="section level3">
+<h3>Validation for Limited Parameter Model with Test Data Subset</h3>
+<p>The accuracy still stays in the range of 98% which is acceptable</p>
+<pre class="r"><code>result&lt;-predict(modFit2,testing2)
+confusionMatrix(result, testing2$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 2219   34    1    0    0
+##          B    5 1452   18    1   12
+##          C    6   21 1341   13    5
+##          D    2    9    8 1272    4
+##          E    0    2    0    0 1421
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.982           
+##                  95% CI : (0.9788, 0.9849)
+##     No Information Rate : 0.2845          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.9773          
+##  Mcnemar's Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.9942   0.9565   0.9803   0.9891   0.9854
+## Specificity            0.9938   0.9943   0.9931   0.9965   0.9997
+## Pos Pred Value         0.9845   0.9758   0.9675   0.9822   0.9986
+## Neg Pred Value         0.9977   0.9896   0.9958   0.9979   0.9967
+## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
+## Detection Rate         0.2828   0.1851   0.1709   0.1621   0.1811
+## Detection Prevalence   0.2873   0.1897   0.1767   0.1651   0.1814
+## Balanced Accuracy      0.9940   0.9754   0.9867   0.9928   0.9926</code></pre>
+</div>
+<div id="checking-the-test-submission" class="section level3">
+<h3>Checking the test submission</h3>
+<p>Test Submissions are compared for both 52 as well as 9 predcitor models and are found to be equal.</p>
+<pre class="r"><code>result2&lt;-predict(modFit2,testingProject)
+result1&lt;-predict(modFit,testingProject)
+table(result2,result1)</code></pre>
+<pre><code>##        result1
+## result2 A B C D E
+##       A 7 0 0 0 0
+##       B 0 8 0 0 0
+##       C 0 0 1 0 0
+##       D 0 0 0 1 0
+##       E 0 0 0 0 3</code></pre>
+<p>Thus limited parameter model is selected with predictors comprising of the accelrations and magneti movements of dumbeel roll and pitch of the belt and forearm as well as yaw of the belt.</p>
+</div>
 </div>
 
 
